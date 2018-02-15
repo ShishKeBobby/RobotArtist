@@ -1,0 +1,67 @@
+MODULE Module1
+	VAR iodev file;
+    VAR robtarget Target_60:=[[122.222129541,-100.819546145,133.913999093],[0,0.999395859,-0.034755099,0],[-2,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    
+    PROC main()
+        VAR num changeSpeed:=50; !go as fast as controller will allow
+        VAR num read1;
+        VAR num read2:=2;
+        VAR num width:=20;
+        VAR num height:=25;
+        VAR num step1:=10;
+        VAR num zHeight:=165;
+        VAR num placeHolder:=0;
+        !set machine to origin
+        Target_60:= [[185.647575224,-200,220.2],[0,1,0.000000536,0],[-2,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+        MoveL Target_60,v500,z10,tool0\WObj:=wobj0;
+        
+        !open pix file, variable read2 indicates what picture to 
+        IF read2=1 THEN
+            Open "HOME:/refpicture.csv", file\Read;
+            width:=20;
+            height:=25;
+            step1:=10;
+        ELSEIF read2=2 THEN
+            Open "HOME:/batmanPicture.csv", file\Read;
+            width:=20;
+            height:=25;
+            step1:=10;
+        ELSEIF read2=3 THEN
+            Open "HOME:/marioPicture.csv", file\Read;
+            width:=40;
+            height:=40;
+            step1:=10;
+        ELSEIF read2=4 THEN
+            Open "HOME:/mushroomPicture.csv", file\Read;
+            width:=40;
+            height:=40;
+            step1:=10;
+        ENDIF
+        width:=width*10;
+        height:=height*10;
+        SpeedRefresh changeSpeed;
+        FOR i FROM 1 TO width STEP step1 DO
+            FOR j FROM 1 TO height STEP step1 DO
+                read1 := ReadNum(file\Delim:=",");
+                !set position of new point
+                IF read1=0 THEN
+                    placeHolder:=0;
+                ELSE
+                    Target_60:= [[185.647575224+i,-200+j,zHeight],[0,1,0.000000536,0],[-2,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+                    MoveL Target_60,v500,z10,tool0\WObj:=wobj0;
+                    !drop the point
+                    Target_60:= [[185.647575224+i,-200+j,zHeight-read1],[0,1,0.000000536,0],[-2,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+                    MoveL Target_60,v500,z10,tool0\WObj:=wobj0;
+                    !raise tooltip
+                    Target_60:= [[185.647575224+i,-200+j,zHeight],[0,1,0.000000536,0],[-2,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+                    MoveL Target_60,v500,z10,tool0\WObj:=wobj0;
+                ENDIF
+            ENDFOR
+        ENDFOR
+        
+        !once complete go back to home position
+        Target_60:= [[185.647575224,-200,zHeight],[0,1,0.000000536,0],[-2,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+        MoveL Target_60,v500,z10,tool0\WObj:=wobj0;
+        Close file;
+    ENDPROC
+ENDMODULE
